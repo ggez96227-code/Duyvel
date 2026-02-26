@@ -35,7 +35,7 @@ local Tab5 = Window:MakeTab({
     Icon = "rbxassetid://4483345998"
 })
 local Tab6 = Window:MakeTab({
-    Name = "Players",
+    Name = "Players+Anti💎",
     Icon = "rbxassetid://4483345998"
 })
 local Tab7 = Window:MakeTab({
@@ -1771,4 +1771,35 @@ Tab5:AddToggle({
             })
         end
     end
+})
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local TPWalk = false
+local Speed = 73
+
+Tab6:AddToggle({
+	Name = "TP Walk 63 Speed",
+	Default = false,
+	Callback = function(Value)
+		TPWalk = Value
+		
+		if TPWalk then
+			RunService:BindToRenderStep("TPWalk", Enum.RenderPriority.Character.Value + 1, function()
+				local char = LocalPlayer.Character
+				if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
+					local hum = char:FindFirstChildOfClass("Humanoid")
+					local root = char.HumanoidRootPart
+					
+					if hum.MoveDirection.Magnitude > 0 then
+						root.CFrame = root.CFrame + (hum.MoveDirection * (Speed * 0.016))
+					end
+				end
+			end)
+		else
+			RunService:UnbindFromRenderStep("TPWalk")
+		end
+	end
 })
