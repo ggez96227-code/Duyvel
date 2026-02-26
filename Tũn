@@ -1803,3 +1803,96 @@ Tab6:AddToggle({
 		end
 	end
 })
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local AntiEnabled = false
+
+Tab6:AddToggle({
+	Name = "Anti Black Gojo",
+	Default = false,
+	Callback = function(Value)
+		AntiEnabled = Value
+	end
+})
+
+task.spawn(function()
+	while task.wait(1) do
+		if AntiEnabled then
+			local gui = LocalPlayer:FindFirstChild("PlayerGui")
+			if gui and gui:FindFirstChild("GojoLighting") then
+				gui.GojoLighting:Destroy()
+			end
+		end
+	end
+end)
+
+------------------------------------------------
+-- 🔍 TRADE CHECK SYSTEM
+------------------------------------------------
+
+local NameInput = ""
+local ResultLabel = Tab6:AddLabel("Chưa kiểm tra...")
+
+Tab6:AddTextbox({
+	Name = "Check trade Scam",
+	Default = "",
+	TextDisappear = false,
+	Callback = function(Value)
+		NameInput = string.lower(Value)
+	end
+})
+
+Tab6:AddButton({
+	Name = "Check",
+	Callback = function()
+		if NameInput == "" then
+			ResultLabel:Set("Vui lòng nhập tên!")
+			return
+		end
+		
+		local FoundPlayer = nil
+		
+		for _, plr in pairs(Players:GetPlayers()) do
+			if string.find(string.lower(plr.Name), NameInput) then
+				FoundPlayer = plr
+				break
+			end
+		end
+		
+		if not FoundPlayer then
+			ResultLabel:Set("Không tìm thấy người chơi!")
+			return
+		end
+		
+		local Safe = false
+		
+		local function CheckContainer(container)
+			if container then
+				for _, item in pairs(container:GetChildren()) do
+					if item:IsA("Tool") then
+						local itemName = string.lower(item.Name)
+						
+						if string.find(itemName, "box") 
+						or string.find(itemName, "fruit") 
+						or string.find(itemName, "book") then
+							return true
+						end
+					end
+				end
+			end
+			return false
+		end
+		
+		-- Check Backpack và Character (nếu đang cầm)
+		if CheckContainer(FoundPlayer:FindFirstChild("Backpack")) 
+		or CheckContainer(FoundPlayer.Character) then
+			Safe = true
+		end
+		
+		if Safe then
+			ResultLabel:Set("An toàn 🟢")
+		else
+			ResultLabel:Set("Player này đang trade scam! ♦️")
+		end
+	end
+})
