@@ -1896,3 +1896,168 @@ Tab6:AddButton({
 		end
 	end
 })
+-- Load Orion Library
+
+
+-- Get Players Service
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to get all player names
+local function GetPlayerNames()
+    local names = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(names, player.Name)
+        end
+    end
+    return names
+end
+
+-- Variables
+local SelectedPlayer = nil
+local HitboxEnabled = false
+local HitboxSize = 5
+local AutoKillEnabled = false
+local LookAtEnabled = false
+local AutoBringEnabled = false
+local BringDistance = 5
+
+-- Dropdown for players
+
+local Section = Tab6:AddSection({Name = "Player Selector"})
+
+local PlayerDropdown = Tab6:AddDropdown({
+    Name = "Select Player",
+    Default = "None",
+    Options = GetPlayerNames(),
+    Callback = function(Value)
+        SelectedPlayer = Players:FindFirstChild(Value)
+        OrionLib:MakeNotification({
+            Name = "Selected",
+            Content = "Selected player: " .. Value,
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+    end    
+})
+
+-- Refresh dropdown button
+Tab6:AddButton({
+    Name = "Refresh Players",
+    Callback = function()
+        PlayerDropdown:Refresh(GetPlayerNames(), true)
+    end    
+})
+
+-- Hitbox Expander
+local HitboxSection = Tab:AddSection({Name = "Hitbox Expander"})
+Tab6:AddToggle({
+    Name = "Enable Hitbox Expand",
+    Default = false,
+    Callback = function(Value)
+        HitboxEnabled = Value
+    end    
+})
+
+Tab6:AddSlider({
+    Name = "Hitbox Size",
+    Min = 1,
+    Max = 50,
+    Default = 5,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Size",
+    Callback = function(Value)
+        HitboxSize = Value
+    end    
+})
+
+-- Auto Kill Button
+local AutoKillSection = Tab:AddSection({Name = "Auto Kill"})
+Tab6:AddButton({
+    Name = "Auto Kill Selected",
+    Callback = function()
+        if SelectedPlayer and SelectedPlayer.Character then
+            -- Tween to player
+            local TweenService = game:GetService("TweenService")
+            local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear)
+            local tween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, tweenInfo, {CFrame = SelectedPlayer.Character.HumanoidRootPart.CFrame})
+            tween:Play()
+            tween.Completed:Wait()
+            
+            -- Fire all RemoteEvents in Backpack
+            for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+                if item:IsA("RemoteEvent") then
+                    item:FireServer()
+                end
+            end
+        end
+    end    
+})
+
+-- LookAt Toggle
+local LookAtSection = Tab:AddSection({Name = "Look At"})
+Tab6:AddToggle({
+    Name = "Enable Look At",
+    Default = false,
+    Callback = function(Value)
+        LookAtEnabled = Value
+    end    
+})
+
+-- Auto Bring
+local AutoBringSection = Tab:AddSection({Name = "Auto Bring"})
+Tab6:AddToggle({
+    Name = "Enable Auto Bring (Client Only)",
+    Default = false,
+    Callback = function(Value)
+        AutoBringEnabled = Value
+    end    
+})
+
+Tab6:AddSlider({
+    Name = "Bring Distance",
+    Min = 1,
+    Max = 50,
+    Default = 5,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Studs",
+    Callback = function(Value)
+        BringDistance = Value
+    end    
+})
+
+-- Main Loop for Hitbox, LookAt, AutoBring
+game:GetService("RunService").Heartbeat:Connect(function()
+    if SelectedPlayer and SelectedPlayer.Character and LocalPlayer.Character then
+        local targetHumanoid = SelectedPlayer.Character:FindFirstChild("Humanoid")
+        local targetRoot = SelectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        
+        -- Hitbox Expand (Resize mode)
+        if HitboxEnabled and targetHumanoid then
+            for _, part in ipairs(SelectedPlayer.Character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+                    part.Transparency = 0.5 -- Optional for visibility
+                    part.CanCollide = false -- Optional
+                end
+            end
+        end
+        
+        -- Look At (Body orientation)
+        if LookAtEnabled and targetRoot and localRoot then
+            local direction = (targetRoot.Position - localRoot.Position).unit
+            localRoot.CFrame = CFrame.new(localRoot.Position, localRoot.Position + Vector3.new(direction.X, 0, direction.Z))
+        end
+        
+        -- Auto Bring (Client-side, tween selected player to local player)
+        if AutoBringEnabled and targetRoot and localRoot then
+            targetRoot.CFrame = localRoot.CFrame * CFrame.new(0, 0, -BringDistance)
+        end
+    end
+end)
+
+OrionLib:Init()
