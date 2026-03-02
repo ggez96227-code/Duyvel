@@ -1,5 +1,6 @@
 -- ORION LIB
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/duysira5/Hehe/refs/heads/main/Orion.lua.txt"))()
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tanloczx/Shadow-Hubvn/refs/heads/main/Orion.lua.txt"))()
+
 
 
 local Players = game:GetService("Players")
