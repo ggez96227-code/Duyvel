@@ -2061,7 +2061,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
-
+Tab:AddParagraph("Auto Owner Farm ")
 
 local selectedMode = nil
 local running = false
