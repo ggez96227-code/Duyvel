@@ -40,7 +40,7 @@ local Tab6 = Window:MakeTab({
     Icon = "rbxassetid://4483345998"
 })
 local Tab7 = Window:MakeTab({
-    Name = "Players info",
+    Name = "Event+Items⭐",
     Icon = "rbxassetid://4483345998"
 })
 local Tab8 = Window:MakeTab({
@@ -2060,5 +2060,120 @@ game:GetService("RunService").Heartbeat:Connect(function()
         end
     end
 end)
+
+
+
+local selectedMode = nil
+local running = false
+local oldCFrame = nil
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local lp = Players.LocalPlayer
+
+-- vị trí hồi máu
+local safeCFrame = CFrame.new(
+	-6207.42773, 87714.6641, -3421.48242,
+	0.0307674408, 0, -0.99952656,
+	0, 1, 0,
+	0.99952656, 0, 0.0307674408
+)
+
+-- dropdown
+Tab7:AddDropdown({
+	Name = "Select Mode kill",
+	Default = "",
+	Options = {"Auto Skill Kill [Owner]", "Kill Aura [Not get owner]"},
+	Callback = function(Value)
+		selectedMode = Value
+	end    
+})
+
+-- toggle
+Tab7:AddToggle({
+	Name = "Start",
+	Default = false,
+	Callback = function(Value)
+		running = Value
+		
+		if running then
+			oldCFrame = lp.Character.HumanoidRootPart.CFrame
+			
+			task.spawn(function()
+				while running do
+					task.wait(0.2)
+					
+					local char = lp.Character
+					if not char or not char:FindFirstChild("Humanoid") then continue end
+					
+					local humanoid = char.Humanoid
+					local hrp = char:FindFirstChild("HumanoidRootPart")
+					if not hrp then continue end
+					
+					-- check máu
+					local hpPercent = (humanoid.Health / humanoid.MaxHealth) * 100
+					
+					if hpPercent < 40 then
+						hrp.CFrame = safeCFrame
+						
+						repeat
+							task.wait(0.5)
+							hpPercent = (humanoid.Health / humanoid.MaxHealth) * 100
+						until hpPercent >= 90 or not running
+					end
+					
+					if selectedMode == "Auto Skill Kill [Owner]" then
+						
+						local owner = workspace:FindFirstChild("Siu_Owner")
+						
+						if owner and owner:FindFirstChild("HumanoidRootPart") and owner:FindFirstChild("Humanoid") then
+							
+							-- tween theo owner liên tục
+							local tween = TweenService:Create(
+								hrp,
+								TweenInfo.new(0.2, Enum.EasingStyle.Linear),
+								{CFrame = owner.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)}
+							)
+							tween:Play()
+							
+							-- spam remote trong backpack
+							for _,v in pairs(lp.Backpack:GetDescendants()) do
+								if v:IsA("RemoteEvent") then
+									v:FireServer()
+								end
+							end
+							
+							-- nếu owner chết
+							if owner.Humanoid.Health <= 0 then
+								if oldCFrame then
+									hrp.CFrame = oldCFrame
+								end
+							end
+						end
+						
+					elseif selectedMode == "Kill Aura [Not get owner]" then
+						
+						local owner = workspace:FindFirstChild("Siu_Owner")
+						if owner and owner:FindFirstChild("HumanoidRootPart") then
+							hrp.CFrame = owner.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
+						end
+						
+						getgenv().G = true
+						getgenv().Creator = 'https://discord.gg/B3HqPPzFYr - HalloweenGaster'
+						
+						sethiddenproperty(lp, "SimulationRadius", 112412400000)
+						sethiddenproperty(lp, "MaxSimulationRadius", 112412400000)
+						
+						for i,d in pairs(workspace:GetDescendants()) do
+							if d:IsA("Humanoid") and d.Parent.Name ~= lp.Name then
+								d.Health = 0
+							end
+						end
+					end
+					
+				end
+			end)
+		end
+	end    
+})
 
 OrionLib:Init()
