@@ -2077,7 +2077,7 @@ local safeCFrame = CFrame.new(
 	0, 1, 0,
 	0.99952656, 0, 0.0307674408
 )
-Tab:AddSection({Name = "Auto Owner Event💎"})
+Tab7:AddSection({Name = "Auto Owner Event💎"})
 -- dropdown
 Tab7:AddDropdown({
 	Name = "Select Mode kill",
