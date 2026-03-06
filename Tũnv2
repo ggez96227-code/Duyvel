@@ -2177,3 +2177,43 @@ Tab7:AddToggle({
 })
 
 OrionLib:Init()
+local farmToggle = false
+
+Tab7:AddToggle({
+    Name = "Farm Yorus V3🎁)",
+    Default = false,
+    Callback = function(Value)
+        farmToggle = Value
+        if farmToggle then
+            OrionLib:MakeNotification({
+                Name = "Đã bật",
+                Content = "Đang auto click Yoru V3 random mỗi 0.1s...",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        else
+            OrionLib:MakeNotification({
+                Name = "Đã tắt",
+                Content = "Đã dừng auto farm Yoru V3",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end    
+})
+
+-- Vòng lặp farm (chạy nền)
+spawn(function()
+    while true do
+        wait()
+        if farmToggle then
+            pcall(function()
+                local clickPart = workspace.MAP["DAK ISLAND [Lv 1350+]"]["Yoru V3 random"]
+                if clickPart and clickPart:FindFirstChild("ClickDetector") then
+                    fireclickdetector(clickPart.ClickDetector)
+                end
+            end)
+            wait(0.1)  -- delay 0.1 giây như bạn yêu cầu
+        end
+    end
+end)
