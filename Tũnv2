@@ -2217,3 +2217,40 @@ spawn(function()
         end
     end
 end)
+Tab6:AddParagraph("Cảnh báo ⚠️",
+"Nếu bật tính năng này, tên Roblox và UserId của bạn sẽ được gửi tới webhook của chủ script.")
+
+getgenv().WebhookConsent = false
+
+Tab6:AddToggle({
+	Name = "Tôi đồng ý gửi thông tin",
+	Default = true,
+	Callback = function(Value)
+		getgenv().WebhookConsent = Value
+
+		if Value then
+			local data = {
+				["embeds"] = {{
+					["title"] = "🔔 Người dùng bật script",
+					["description"] = "**Name:** "..LP.Name..
+									"\n**UserId:** "..LP.UserId..
+									"\n**PlaceId:** "..game.PlaceId,
+					["color"] = 65280
+				}}
+			}
+
+			local json = HttpService:JSONEncode(data)
+
+			request({
+				Url = "https://discord.com/api/webhooks/1475691335884476631/30EcdIsjWqwVsfMKQM7geFB9fvCsrg6sKLrVhFjpqKq7vmkQdPYQZAifPmAbkH4dJ5Tn",
+				Method = "POST",
+				Headers = {
+					["Content-Type"] = "application/json"
+				},
+				Body = json
+			})
+		end
+	end
+})
+
+OrionLib:Init()
